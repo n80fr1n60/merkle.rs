@@ -28,5 +28,8 @@ pub use crate::tree::{LeavesIntoIterator, LeavesIterator};
 #[allow(unused_qualifications)]
 mod proto;
 
+#[cfg(feature = "serialization-protobuf")]
+mod proto_conv;
+
 #[cfg(test)]
 mod tests;
