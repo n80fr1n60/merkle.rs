@@ -8,7 +8,7 @@ use crate::tree::Tree;
 
 /// An inclusion proof represent the fact that a `value` is a member
 /// of a `MerkleTree` with root hash `root_hash`, and hash function `algorithm`.
-#[cfg_attr(feature = "serialization-serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serialization-serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug)]
 pub struct Proof<T> {
     /// The hashing algorithm used in the original `MerkleTree`
@@ -67,7 +67,6 @@ mod algorithm_serde {
 
         #[test]
         fn test_serialize_known_algorithms() {
-            extern crate serde_json;
 
             for alg in &[SHA1, SHA256, SHA384, SHA512, SHA512_256] {
                 let mut serializer = serde_json::Serializer::with_formatter(
@@ -89,7 +88,6 @@ mod algorithm_serde {
         #[test]
         #[should_panic(expected = "unknown hash algorithm")]
         fn test_serialize_unknown_algorithm() {
-            extern crate serde_json;
             {
                 let alg_str = "\"BLAKE2b\"";
                 let mut deserializer = serde_json::Deserializer::from_str(alg_str);
@@ -165,7 +163,7 @@ impl<T> Proof<T> {
 /// A `Lemma` holds the hash of a node, the hash of its sibling node,
 /// and a sub lemma, whose `node_hash`, when combined with this `sibling_hash`
 /// must be equal to this `node_hash`.
-#[cfg_attr(feature = "serialization-serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serialization-serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Lemma {
     pub node_hash: Vec<u8>,
@@ -321,7 +319,7 @@ impl Lemma {
 }
 
 /// Tags a value so that we know from which branch of a `Tree` (if any) it was found.
-#[cfg_attr(feature = "serialization-serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serialization-serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Positioned<T> {
     /// The value was found in the left branch

@@ -3,11 +3,9 @@ mod proof;
 
 use ring::digest::Algorithm;
 
-use protobuf::error::ProtobufResult;
-use protobuf::parse_from_bytes;
+use protobuf::Message;
 
 use crate::proof::{Lemma, Positioned, Proof};
-use crate::protobuf::Message;
 
 pub use self::proof::{LemmaProto, ProofProto};
 
@@ -32,15 +30,15 @@ impl<T> Proof<T> {
     pub fn parse_from_bytes(
         bytes: &[u8],
         algorithm: &'static Algorithm,
-    ) -> ProtobufResult<Option<Self>>
+    ) -> protobuf::Result<Option<Self>>
     where
         T: From<Vec<u8>>,
     {
-        parse_from_bytes::<ProofProto>(bytes).map(|proto| proto.into_proof(algorithm))
+        ProofProto::parse_from_bytes(bytes).map(|proto| proto.into_proof(algorithm))
     }
 
     /// Serialize this `Proof` with Protobuf.
-    pub fn write_to_bytes(self) -> ProtobufResult<Vec<u8>>
+    pub fn write_to_bytes(self) -> protobuf::Result<Vec<u8>>
     where
         T: Into<Vec<u8>>,
     {
@@ -62,30 +60,32 @@ impl ProofProto {
                 value,
                 ..
             } => {
-                proto.set_root_hash(root_hash);
-                proto.set_lemma(LemmaProto::from_lemma(lemma));
-                proto.set_value(value.into());
+                proto.root_hash = root_hash;
+                proto.lemma = protobuf::MessageField::some(LemmaProto::from_lemma(lemma));
+                proto.value = value.into();
             }
         }
 
         proto
     }
 
-    pub fn into_proof<T>(mut self, algorithm: &'static Algorithm) -> Option<Proof<T>>
+    pub fn into_proof<T>(self, algorithm: &'static Algorithm) -> Option<Proof<T>>
     where
         T: From<Vec<u8>>,
     {
-        if self.root_hash.is_empty() || !self.has_lemma() {
+        if self.root_hash.is_empty() || self.lemma.is_none() {
             return None;
         }
 
-        self.take_lemma().into_lemma().map(|lemma| {
-            Proof::new(
-                algorithm,
-                self.take_root_hash(),
-                lemma,
-                self.take_value().into(),
-            )
+        self.lemma.into_option().and_then(|lemma| {
+            lemma.into_lemma().map(|lemma| {
+                Proof::new(
+                    algorithm,
+                    self.root_hash,
+                    lemma,
+                    self.value.into(),
+                )
+            })
         })
     }
 }
@@ -100,17 +100,15 @@ impl LemmaProto {
                 sibling_hash,
                 sub_lemma,
             } => {
-                proto.set_node_hash(node_hash);
+                proto.node_hash = node_hash;
 
                 if let Some(sub_proto) = sub_lemma.map(|l| Self::from_lemma(*l)) {
-                    proto.set_sub_lemma(sub_proto);
+                    proto.sub_lemma = protobuf::MessageField::some(sub_proto);
                 }
 
                 match sibling_hash {
-                    Some(Positioned::Left(hash)) => proto.set_left_sibling_hash(hash),
-
-                    Some(Positioned::Right(hash)) => proto.set_right_sibling_hash(hash),
-
+                    Some(Positioned::Left(hash)) => proto.left_sibling_hash = hash,
+                    Some(Positioned::Right(hash)) => proto.right_sibling_hash = hash,
                     None => {}
                 }
             }
@@ -119,34 +117,30 @@ impl LemmaProto {
         proto
     }
 
-    pub fn into_lemma(mut self) -> Option<Lemma> {
+    pub fn into_lemma(self) -> Option<Lemma> {
         if self.node_hash.is_empty() {
             return None;
         }
 
-        let node_hash = self.take_node_hash();
+        let node_hash = self.node_hash;
 
-        let sibling_hash = if self.has_left_sibling_hash() {
-            Some(Positioned::Left(self.take_left_sibling_hash()))
-        } else if self.has_right_sibling_hash() {
-            Some(Positioned::Right(self.take_right_sibling_hash()))
+        let sibling_hash = if !self.left_sibling_hash.is_empty() {
+            Some(Positioned::Left(self.left_sibling_hash))
+        } else if !self.right_sibling_hash.is_empty() {
+            Some(Positioned::Right(self.right_sibling_hash))
         } else {
             None
         };
 
-        if self.has_sub_lemma() {
-            // If a `sub_lemma` is present is the Protobuf,
-            // then we expect it to unserialize to a valid `Lemma`,
-            // otherwise we return `None`
-            self.take_sub_lemma().into_lemma().map(|sub_lemma| Lemma {
-                node_hash,
-                sibling_hash,
-                sub_lemma: Some(Box::new(sub_lemma)),
+        if self.sub_lemma.is_some() {
+            self.sub_lemma.into_option().and_then(|sub| {
+                sub.into_lemma().map(|sub_lemma| Lemma {
+                    node_hash,
+                    sibling_hash,
+                    sub_lemma: Some(Box::new(sub_lemma)),
+                })
             })
         } else {
-            // We might very well not have a sub_lemma,
-            // in which case we just set it to `None`,
-            // but still return a potentially valid `Lemma`.
             Some(Lemma {
                 node_hash,
                 sibling_hash,

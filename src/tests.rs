@@ -1,8 +1,5 @@
 #![cfg(test)]
 
-#[cfg(feature = "serialization-serde")]
-extern crate serde_json;
-
 use ring::digest::{Algorithm, Context, SHA512};
 
 use crate::hashutils::{HashUtils, Hashable};
