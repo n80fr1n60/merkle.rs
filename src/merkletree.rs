@@ -31,7 +31,7 @@ impl<T: PartialEq> PartialEq for MerkleTree<T> {
         self.root == other.root
             && self.height == other.height
             && self.count == other.count
-            && (self.algorithm as *const Algorithm) == (other.algorithm as *const Algorithm)
+            && std::ptr::eq(self.algorithm, other.algorithm)
     }
 }
 
@@ -171,7 +171,7 @@ impl<T> MerkleTree<T> {
     }
 
     /// Creates an `Iterator` over the values contained in this Merkle tree.
-    pub fn iter(&self) -> LeavesIterator<T> {
+    pub fn iter(&self) -> LeavesIterator<'_, T> {
         self.root.iter()
     }
 }

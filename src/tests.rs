@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use ring::digest::{Algorithm, Context, SHA512};
 
 use crate::hashutils::{HashUtils, Hashable};
@@ -12,7 +10,7 @@ static DIGEST: &Algorithm = &SHA512;
 fn test_from_str_vec() {
     let values = vec!["one", "two", "three", "four"];
 
-    let hashes = vec![
+    let hashes = [
         DIGEST.hash_leaf(&values[0].as_bytes()),
         DIGEST.hash_leaf(&values[1].as_bytes()),
         DIGEST.hash_leaf(&values[2].as_bytes()),
@@ -59,7 +57,7 @@ fn test_from_vec3() {
     let values = vec![vec![1], vec![2], vec![3]];
     let tree = MerkleTree::from_vec(DIGEST, values);
 
-    let hashes = vec![
+    let hashes = [
         DIGEST.hash_leaf(&vec![1]),
         DIGEST.hash_leaf(&vec![2]),
         DIGEST.hash_leaf(&vec![3]),
@@ -108,7 +106,7 @@ fn test_valid_proof() {
 
     for value in values {
         let proof = tree.gen_proof(value);
-        let is_valid = proof.map(|p| p.validate(&root_hash)).unwrap_or(false);
+        let is_valid = proof.map(|p| p.validate(root_hash)).unwrap_or(false);
 
         assert!(is_valid);
     }
@@ -122,8 +120,8 @@ fn test_valid_proof_str() {
 
     let value = "Rusty";
 
-    let proof = tree.gen_proof(&value);
-    let is_valid = proof.map(|p| p.validate(&root_hash)).unwrap_or(false);
+    let proof = tree.gen_proof(value);
+    let is_valid = proof.map(|p| p.validate(root_hash)).unwrap_or(false);
 
     assert!(is_valid);
 }
@@ -142,7 +140,7 @@ fn test_wrong_proof() {
         let proof = tree1.gen_proof(value);
         let is_valid = proof.map(|p| p.validate(root_hash)).unwrap_or(false);
 
-        assert_eq!(is_valid, false);
+        assert!(!is_valid);
     }
 }
 
@@ -157,7 +155,7 @@ fn test_nth_proof() {
         for i in 0..count {
             let proof = tree.gen_nth_proof(i).expect("gen proof by index");
             assert_eq!(vec![i as u8 + 1], proof.value);
-            assert!(proof.validate(&root_hash));
+            assert!(proof.validate(root_hash));
             assert_eq!(i, proof.index(tree.count()));
         }
 
@@ -188,7 +186,7 @@ fn test_mutate_proof_first_lemma() {
         }
 
         let is_valid = proof.validate(root_hash);
-        assert_eq!(is_valid, false);
+        assert!(!is_valid);
     }
 }
 

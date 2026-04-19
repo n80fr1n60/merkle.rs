@@ -2,8 +2,6 @@ use ring::digest::{Algorithm, Digest};
 
 use crate::hashutils::{HashUtils, Hashable};
 
-pub use crate::proof::{Lemma, Positioned, Proof};
-
 /// Binary Tree where leaves hold a stand-alone value.
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Tree<T> {
@@ -58,13 +56,13 @@ impl<T> Tree<T> {
     }
 
     /// Returns a borrowing iterator over the leaves of the tree.
-    pub fn iter(&self) -> LeavesIterator<T> {
+    pub fn iter(&self) -> LeavesIterator<'_, T> {
         LeavesIterator::new(self)
     }
 }
 
 /// An borrowing iterator over the leaves of a `Tree`.
-/// Adapted from http://codereview.stackexchange.com/q/110283.
+/// Adapted from <http://codereview.stackexchange.com/q/110283>.
 #[allow(missing_debug_implementations)]
 pub struct LeavesIterator<'a, T>
 where

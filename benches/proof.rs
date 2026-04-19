@@ -54,10 +54,10 @@ fn bench_small_str_proof_check(c: &mut Criterion) {
 fn bench_big_rnd_tree(c: &mut Criterion) {
     c.bench_function("MerkleTree::from_vec - big", |b| {
         let mut values = vec![vec![0u8; 256]; 160];
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
-        for mut v in &mut values {
-            rng.fill_bytes(&mut v);
+        for v in &mut values {
+            rng.fill_bytes(v);
         }
 
         b.iter(|| MerkleTree::from_vec(DIGEST, black_box(values.clone())))
@@ -67,10 +67,10 @@ fn bench_big_rnd_tree(c: &mut Criterion) {
 fn bench_big_rnd_proof_gen(c: &mut Criterion) {
     c.bench_function("MerkleTree::gen_proof - big", |b| {
         let mut values = vec![vec![0u8; 256]; 160];
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
-        for mut v in &mut values {
-            rng.fill_bytes(&mut v);
+        for v in &mut values {
+            rng.fill_bytes(v);
         }
 
         let tree = MerkleTree::from_vec(DIGEST, values.clone());
@@ -86,10 +86,10 @@ fn bench_big_rnd_proof_gen(c: &mut Criterion) {
 fn bench_big_rnd_proof_check(c: &mut Criterion) {
     c.bench_function("MerkleTree::validate_proof - big", |b| {
         let mut values = vec![vec![0u8; 256]; 160];
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
-        for mut v in &mut values {
-            rng.fill_bytes(&mut v);
+        for v in &mut values {
+            rng.fill_bytes(v);
         }
 
         let tree = MerkleTree::from_vec(DIGEST, values.clone());
@@ -109,10 +109,10 @@ fn bench_big_rnd_proof_check(c: &mut Criterion) {
 fn bench_big_rnd_iter(c: &mut Criterion) {
     c.bench_function("MerkleTree::iter - big", |b| {
         let mut values = vec![vec![0u8; 256]; 160];
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
-        for mut v in &mut values {
-            rng.fill_bytes(&mut v);
+        for v in &mut values {
+            rng.fill_bytes(v);
         }
 
         let tree = MerkleTree::from_vec(DIGEST, values);

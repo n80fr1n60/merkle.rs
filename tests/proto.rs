@@ -9,7 +9,7 @@ use ring::digest::{Algorithm, Context, SHA512};
 use merkle::{Hashable, MerkleTree, Proof};
 
 #[allow(non_upper_case_globals)]
-static digest: &'static Algorithm = &SHA512;
+static digest: &Algorithm = &SHA512;
 
 #[test]
 fn test_protobuf_inverse() {
@@ -63,9 +63,9 @@ impl From<Vec<u8>> for PublicKey {
     }
 }
 
-impl Into<Vec<u8>> for PublicKey {
-    fn into(self) -> Vec<u8> {
-        self.to_bytes()
+impl From<PublicKey> for Vec<u8> {
+    fn from(value: PublicKey) -> Self {
+        value.to_bytes()
     }
 }
 
