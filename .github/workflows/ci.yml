@@ -95,12 +95,34 @@ jobs:
       - name: Coverage (default features)
         run: cargo +stable llvm-cov --lcov --output-path lcov.info --ignore-filename-regex 'src/proto/.*'
 
-      - name: Upload to Coveralls
+      - name: Upload default coverage to Coveralls
         uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           file: lcov.info
           format: lcov
+          flag-name: default
+          parallel: true
+          debug: true
+
+      - name: Coverage (all features)
+        run: cargo +stable llvm-cov --all-features --lcov --output-path lcov-protobuf.info --ignore-filename-regex 'src/proto/.*'
+
+      - name: Upload protobuf coverage to Coveralls
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: lcov-protobuf.info
+          format: lcov
+          flag-name: protobuf
+          parallel: true
+          debug: true
+
+      - name: Finish Coveralls build
+        uses: coverallsapp/github-action@648a8eb78e6d50909eff900e4ec85cab4524a45b # v2.3.6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
           debug: true
 
   audit:
