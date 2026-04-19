@@ -9,7 +9,7 @@ extern crate rand;
 extern crate ring;
 
 use merkle::MerkleTree;
-use rand::RngCore;
+use rand::Rng;
 use ring::digest::{Algorithm, SHA512};
 
 static DIGEST: &Algorithm = &SHA512;
