@@ -7,7 +7,7 @@ authors = [
   "Romain Ruetschi <romain.ruetschi@gmail.com>"
 ]
 
-edition       = "2018"
+edition       = "2021"
 description   = "Merkle tree implementation with support for generation of inclusion proofs."
 license       = "BSD-3-Clause"
 documentation = "https://docs.rs/merkle"
@@ -45,4 +45,3 @@ rand       = "0.9"
 [features]
 serialization-protobuf = [ "protobuf", "protobuf-codegen" ]
 serialization-serde    = [ "serde" ]
-
