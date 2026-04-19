@@ -1,3 +1,3 @@
-// @generated
+#![allow(missing_docs)]
 
-pub mod proof;
+include!(concat!(env!("OUT_DIR"), "/proto_mod.rs"));
