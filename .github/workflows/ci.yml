@@ -77,7 +77,9 @@ jobs:
           components: rustfmt
 
       - name: Check formatting
-        run: cargo fmt --all -- --check
+        run: |
+          cargo build --all-features
+          cargo fmt --all -- --check
 
   coverage:
     name: Coverage
